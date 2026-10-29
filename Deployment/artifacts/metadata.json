@@ -1,0 +1,88 @@
+{
+  "trained_at_utc": "2026-10-28T21:34:48+00:00",
+  "sklearn_version": "1.8.0",
+  "target": "target_temperature_c",
+  "feature_order": [
+    "day_of_year_sin",
+    "day_of_year_cos",
+    "target_temperature_c_lag_1",
+    "target_temperature_c_lag_12",
+    "target_temperature_c_lag_183",
+    "target_temperature_c_roll_mean_4",
+    "target_temperature_c_roll_mean_15",
+    "target_temperature_c_roll_mean_31"
+  ],
+  "step_days": 2,
+  "ridge_alpha": 10,
+  "train": {
+    "rows": 861,
+    "start": "2022-01-02",
+    "end": "2026-09-18"
+  },
+  "holdout": {
+    "rows": 11,
+    "start": "2026-09-20",
+    "end": "2026-10-10"
+  },
+  "target_range": {
+    "min": 6.57,
+    "max": 34.92
+  },
+  "default_model": "ridge",
+  "models": {
+    "ridge": {
+      "label": "Ridge regression",
+      "file": "ridge.joblib",
+      "cv_mae": 1.3911,
+      "cv_rmse": 1.8762,
+      "holdout_mae": 0.7547,
+      "holdout_rmse": 0.9108,
+      "residual_quantiles": {
+        "q025": -3.4614724163644164,
+        "q10": -2.0781852868617894,
+        "q90": 2.361452110864457,
+        "q975": 4.365929996570104
+      }
+    },
+    "random_forest": {
+      "label": "Random forest",
+      "file": "random_forest.joblib",
+      "cv_mae": 1.5634,
+      "cv_rmse": 2.0671,
+      "holdout_mae": 0.8422,
+      "holdout_rmse": 1.0301,
+      "residual_quantiles": {
+        "q025": -4.2453306964753645,
+        "q10": -2.466620018469918,
+        "q90": 2.4504701603249095,
+        "q975": 4.356360541289398
+      }
+    },
+    "gradient_boosting": {
+      "label": "Gradient boosting",
+      "file": "gradient_boosting.joblib",
+      "cv_mae": 1.6431,
+      "cv_rmse": 2.1355,
+      "holdout_mae": 0.8509,
+      "holdout_rmse": 0.9915,
+      "residual_quantiles": {
+        "q025": -4.373606077226238,
+        "q10": -2.4893451749256106,
+        "q90": 2.6990486830442695,
+        "q975": 4.3901098399743015
+      }
+    }
+  },
+  "baselines": {
+    "persistence": {
+      "label": "Persistence (same as 2 days ago)",
+      "cv_mae": 1.5916,
+      "holdout_mae": 0.9155
+    },
+    "seasonal_naive": {
+      "label": "Seasonal naive (same day last year)",
+      "cv_mae": 2.2835,
+      "holdout_mae": 0.9155
+    }
+  }
+}

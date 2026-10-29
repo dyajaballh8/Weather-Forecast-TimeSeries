@@ -1,0 +1,17 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Cairo Temperature Forecast{% endblock %}</title>
+  <meta name="description" content="Machine-learning forecast of Cairo's temperature with an uncertainty range.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8C%A1%EF%B8%8F%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="{% static 'forecast/vendor/bootstrap/bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'forecast/vendor/bootstrap-icons/bootstrap-icons.min.css' %}">
+  <link rel="stylesheet" href="{% static 'forecast/css/app.css' %}">
+</head>
+<body>
+  {% block content %}{% endblock %}
+  <script src="{% static 'forecast/js/app.js' %}" defer></script>
+</body>
+</html>

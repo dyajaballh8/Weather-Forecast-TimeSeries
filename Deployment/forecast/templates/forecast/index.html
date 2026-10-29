@@ -1,0 +1,144 @@
+{% extends "forecast/base.html" %}
+{% load static %}
+{% block content %}
+<header class="hero">
+  <div class="container">
+    <div class="hero-kicker"><i class="bi bi-thermometer-half"></i> Cairo · time-series forecasting</div>
+    <h1>Cairo Temperature Forecast</h1>
+    <p class="hero-lead">Enter a few recent temperature readings and get a machine-learning forecast for any date, with an uncertainty range.</p>
+    <ul class="hero-chips">
+      <li><i class="bi bi-cpu"></i> {{ default_meta.label }}</li>
+      <li><i class="bi bi-bullseye"></i> Typical error ±{{ default_meta.cv_mae|floatformat:1 }} °C</li>
+      <li><i class="bi bi-calendar3"></i> Trained on {{ meta.train.rows }} readings · {{ meta.train.start|slice:":4" }}–{{ meta.train.end|slice:":4" }}</li>
+    </ul>
+  </div>
+</header>
+
+<main class="container main-grid">
+  <div class="row g-4">
+
+    <!-- ===================== form ===================== -->
+    <div class="col-lg-7 {% if forecast %}order-2 order-lg-1{% endif %}">
+      <form method="post" novalidate id="forecast-form" class="card form-card" data-sample-url="{% url 'forecast:api_sample' %}">
+        {% csrf_token %}
+        <div class="card-header"><i class="bi bi-sliders2"></i> Forecast inputs</div>
+        <div class="card-body">
+
+          {% if form.errors %}
+          <div class="alert alert-danger d-flex gap-2" role="alert">
+            <i class="bi bi-exclamation-octagon-fill"></i>
+            <div>
+              <strong>We could not make a forecast yet.</strong>
+              Please fix the highlighted {% if form.errors|length == 1 %}field{% else %}{{ form.errors|length }} fields{% endif %} below.
+              {% for error in form.non_field_errors %}<div>{{ error }}</div>{% endfor %}
+            </div>
+          </div>
+          {% endif %}
+          {% if form.warnings %}
+          <div class="alert alert-warning d-flex gap-2" role="alert">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            <div>{% for w in form.warnings %}<div>{{ w }}</div>{% endfor %}</div>
+          </div>
+          {% endif %}
+
+          <div class="preset-box">
+            <label for="sample-select" class="form-label mb-1"><i class="bi bi-database"></i> Try it with real data</label>
+            <div class="input-group">
+              <select id="sample-select" class="form-select" aria-label="Choose a date with real data">
+                {% for s in samples %}<option value="{{ s.value }}">{{ s.label }}</option>{% endfor %}
+              </select>
+              <button type="button" id="load-sample" class="btn btn-outline-dark">Load</button>
+            </div>
+            <div id="sample-status" class="form-text" aria-live="polite">The form is pre-filled with the latest readings in the dataset.</div>
+          </div>
+
+          <fieldset class="section">
+            <legend><span class="step">1</span> When</legend>
+            <div class="row g-3"><div class="col-md-6">{% include "forecast/_field.html" with field=form.forecast_date %}</div></div>
+          </fieldset>
+
+          <fieldset class="section">
+            <legend><span class="step">2</span> Recent readings</legend>
+            <div class="row g-3">
+              <div class="col-sm-6 col-md-4">{% include "forecast/_field.html" with field=form.temp_2d_ago suffix="°C" %}</div>
+              <div class="col-sm-6 col-md-4">{% include "forecast/_field.html" with field=form.temp_24d_ago suffix="°C" %}</div>
+              <div class="col-sm-12 col-md-4">{% include "forecast/_field.html" with field=form.temp_1y_ago suffix="°C" %}</div>
+            </div>
+          </fieldset>
+
+          <fieldset class="section">
+            <legend><span class="step">3</span> Recent averages</legend>
+            <div class="row g-3">
+              <div class="col-sm-6 col-md-4">{% include "forecast/_field.html" with field=form.avg_8d suffix="°C" %}</div>
+              <div class="col-sm-6 col-md-4">{% include "forecast/_field.html" with field=form.avg_30d suffix="°C" %}</div>
+              <div class="col-sm-12 col-md-4">{% include "forecast/_field.html" with field=form.avg_62d suffix="°C" %}</div>
+            </div>
+          </fieldset>
+
+          <fieldset class="section">
+            <legend><span class="step">4</span> Model</legend>
+            <div class="row g-3"><div class="col-md-8">{% include "forecast/_field.html" with field=form.model %}</div></div>
+          </fieldset>
+
+          <button type="submit" class="btn btn-forecast w-100" id="submit-btn">
+            <span class="spinner-border spinner-border-sm d-none" aria-hidden="true"></span>
+            <span class="label"><i class="bi bi-graph-up-arrow"></i> Forecast temperature</span>
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- ===================== result ===================== -->
+    <div class="col-lg-5 {% if forecast %}order-1 order-lg-2{% endif %}">
+      {% if forecast %}
+      <section class="card result-card result-{{ band.key }}" id="result" aria-live="polite">
+        <div class="result-top">
+          <div class="result-icon"><i class="bi {{ band.icon }}"></i></div>
+          <div>
+            <div class="result-label">Forecast for {{ forecast_date|date:"l, j F Y" }}</div>
+            <div class="result-value">{{ forecast.value|floatformat:1 }}<span>°C</span></div>
+            <span class="band-badge">{{ band.label }} · {{ band.hint }}</span>
+          </div>
+        </div>
+        <div class="card-body">
+          <dl class="range-list">
+            <div><dt><i class="bi bi-arrows-expand-vertical"></i> Likely range (80%)</dt><dd>{{ forecast.low80|floatformat:1 }} – {{ forecast.high80|floatformat:1 }} °C</dd></div>
+            <div><dt><i class="bi bi-arrows-expand"></i> Wide range (95%)</dt><dd>{{ forecast.low95|floatformat:1 }} – {{ forecast.high95|floatformat:1 }} °C</dd></div>
+          </dl>
+          {% if observed is not None %}
+          <div class="observed"><i class="bi bi-clipboard-check"></i>
+            Recorded in the dataset for this date: <strong>{{ observed|floatformat:1 }} °C</strong>
+            (forecast difference {{ observed_error|floatformat:"1" }} °C)
+          </div>
+          {% endif %}
+          <h2 class="chart-title">Your inputs and the forecast</h2>
+          <div class="chart-wrap">{{ chart_svg|safe }}</div>
+          <div class="result-meta">
+            <span><i class="bi bi-cpu"></i> {{ forecast.model_label }} · typical error ±{{ forecast.cv_mae|floatformat:2 }} °C</span>
+            {% if forecast.cached %}<span class="cache-badge"><i class="bi bi-lightning-charge-fill"></i> served from cache</span>{% endif %}
+          </div>
+        </div>
+      </section>
+      {% else %}
+      <section class="card placeholder-card" id="result">
+        <div class="placeholder-icon"><i class="bi bi-cloud-sun"></i></div>
+        <h2>Your forecast will appear here</h2>
+        <ol>
+          <li>Pick the date you want a forecast for.</li>
+          <li>Type recent temperatures, or load real data with one click.</li>
+          <li>Press <strong>Forecast temperature</strong>.</li>
+        </ol>
+        <p class="placeholder-note">The model predicts the next 2-day reading from recent history and the time of year, so it only needs temperatures, not humidity or pressure.</p>
+      </section>
+      {% endif %}
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    Data: NASA POWER daily series for Cairo (2021 – 2026), sampled every 2 days.
+    Ranges come from out-of-sample errors during time-series cross-validation and are approximate.
+  </div>
+</footer>
+{% endblock %}

@@ -1,0 +1,18 @@
+# Optional Render Blueprint. (Blueprints are read from the REPOSITORY ROOT: copy this file there if you use it.)
+services:
+  - type: web
+    name: cairo-temperature-forecast
+    runtime: python
+    rootDir: Deployment
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
+    startCommand: gunicorn config.wsgi:application --workers 2 --timeout 60
+    healthCheckPath: /health/
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.3
+      - key: DJANGO_DEBUG
+        value: "0"
+      - key: DJANGO_SECURE_COOKIES
+        value: "1"
+      - key: DJANGO_SECRET_KEY
+        generateValue: true

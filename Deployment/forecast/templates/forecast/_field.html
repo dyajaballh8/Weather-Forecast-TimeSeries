@@ -1,0 +1,7 @@
+<label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+<div class="input-group has-validation">
+  {{ field }}
+  {% if suffix %}<span class="input-group-text">{{ suffix }}</span>{% endif %}
+  {% for error in field.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+</div>
+{% if not field.errors and field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
