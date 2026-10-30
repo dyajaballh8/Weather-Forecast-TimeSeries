@@ -106,15 +106,15 @@
         <div class="result-top">
           <div class="result-icon"><i class="bi {{ band.icon }}"></i></div>
           <div>
-            <div class="result-label">Predicted for {{ forecast_date|date:"D, j M Y" }}</div>
+            <div class="result-label">Forecast for {{ forecast_date|date:"l, j F Y" }}</div>
             <div class="result-value">{{ forecast.value|floatformat:1 }}<span>°C</span></div>
-            <span class="band-badge">{{ band.label }}</span>
+            <span class="band-badge">{{ band.label }} · {{ band.hint }}</span>
           </div>
         </div>
         <div class="card-body">
           <dl class="range-list">
-            <div><dt><i class="bi bi-shield-check"></i> 80% range</dt><dd>{{ forecast.low80|floatformat:2 }} to {{ forecast.high80|floatformat:2 }} °C</dd></div>
-            <div><dt><i class="bi bi-shield"></i> 95% range</dt><dd>{{ forecast.low95|floatformat:2 }} to {{ forecast.high95|floatformat:2 }} °C</dd></div>
+            <div><dt><i class="bi bi-arrows-expand-vertical"></i> Likely range (80%)</dt><dd>{{ forecast.low80|floatformat:1 }} – {{ forecast.high80|floatformat:1 }} °C</dd></div>
+            <div><dt><i class="bi bi-arrows-expand"></i> Wide range (95%)</dt><dd>{{ forecast.low95|floatformat:1 }} – {{ forecast.high95|floatformat:1 }} °C</dd></div>
           </dl>
 
           {% if observed is not None %}
@@ -124,7 +124,7 @@
           </div>
           {% endif %}
 
-          <div class="chart-title">Inputs vs forecast</div>
+          <div class="chart-title">YOUR INPUTS AND THE FORECAST</div>
           <div class="chart-wrap">{{ chart_svg|safe }}</div>
 
           <div class="result-meta">
