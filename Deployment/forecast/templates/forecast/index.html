@@ -1,5 +1,98 @@
 {% extends "forecast/base.html" %}
 {% load static %}
+{% block extra_head %}
+<style>
+/* Inlined app styles in case external static is blocked */
+:root {
+  --navy: #14172b; --navy-2: #232a5c; --accent: #ffc300; --ink: #1b1f2a; --muted: #6b7086;
+  --bg: #f4f5fa; --line: #e4e6f0;
+  --cool: #2b6cb0; --cool-2: #4aa3df; --mild: #1f9d55; --mild-2: #58c98a;
+  --warm: #d97706; --warm-2: #ffb347; --hot: #c0392b; --hot-2: #ef6f4c;
+  --serif: Cambria, Georgia, "Times New Roman", serif;
+}
+body { background: var(--bg); color: var(--ink); font-family: system-ui, -apple-system, "Segoe UI", Roboto, Calibri, sans-serif; }
+.hero { background: linear-gradient(135deg, var(--navy) 0%, var(--navy-2) 100%); color: #fff; padding: 3rem 0 5.2rem; position: relative; overflow: hidden; }
+.hero::after { content: ""; position: absolute; right: -90px; top: -110px; width: 340px; height: 340px; border-radius: 50%; background: rgba(255, 195, 0, .12); }
+.hero .container { position: relative; z-index: 1; }
+.hero-kicker { color: var(--accent); font-weight: 700; letter-spacing: .14em; text-transform: uppercase; font-size: .78rem; }
+.hero h1 { font-family: var(--serif); font-weight: 700; font-size: clamp(2rem, 5vw, 3rem); margin: .35rem 0 .5rem; }
+.hero-lead { color: #c7cbe0; font-size: 1.1rem; max-width: 42rem; margin-bottom: 1.2rem; }
+.hero-chips { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: .6rem; }
+.hero-chips li { background: rgba(255, 255, 255, .1); border: 1px solid rgba(255, 255, 255, .16); border-radius: 999px; padding: .3rem .85rem; font-size: .85rem; }
+.hero-chips i { color: var(--accent); margin-right: .25rem; }
+.main-grid { margin-top: -3.2rem; padding-bottom: 2.5rem; position: relative; z-index: 2; }
+.card { border: 1px solid var(--line); border-radius: 18px; box-shadow: 0 8px 24px rgba(20, 23, 43, .08); overflow: hidden; }
+.form-card .card-header { background: #fff; font-weight: 700; padding: 1rem 1.4rem; border-bottom: 1px solid var(--line); font-size: 1.05rem; }
+.form-card .card-header i { color: var(--navy-2); margin-right: .4rem; }
+.form-card .card-body { padding: 1.4rem; }
+.preset-box { background: var(--bg); border: 1px dashed #c9ccdc; border-radius: 12px; padding: .9rem 1rem; margin-bottom: 1.4rem; }
+.preset-box label { font-weight: 600; font-size: .9rem; }
+.section { margin-bottom: 1.3rem; }
+.section legend { font-size: 1rem; font-weight: 700; display: flex; align-items: center; gap: .6rem; margin-bottom: .8rem; float: none; width: auto; }
+.step { width: 1.7rem; height: 1.7rem; border-radius: 50%; background: var(--navy); color: var(--accent); display: inline-flex; align-items: center; justify-content: center; font-family: var(--serif); font-size: .95rem; }
+.form-label { font-weight: 600; font-size: .88rem; margin-bottom: .3rem; }
+.form-control, .form-select { border-radius: 10px; padding: .6rem .8rem; border-color: #c9ccdc; }
+.form-control:focus, .form-select:focus { border-color: var(--navy-2); box-shadow: 0 0 0 .2rem rgba(255, 195, 0, .35); }
+.input-group > .form-control { border-top-right-radius: 0; border-bottom-right-radius: 0; }
+.input-group > .form-control:only-child { border-radius: 10px; }
+.input-group-text { background: #fff; color: var(--muted); border-color: #c9ccdc; border-radius: 0 10px 10px 0; }
+.form-text { color: var(--muted); font-size: .78rem; }
+.invalid-feedback { font-size: .82rem; }
+.btn-forecast { background: var(--accent); color: var(--navy); font-weight: 800; border: 0; border-radius: 12px; padding: .85rem 1rem; font-size: 1.05rem; }
+.btn-forecast:hover, .btn-forecast:focus { background: #ffcf33; color: var(--navy); }
+.btn-forecast .bi { margin-right: .35rem; }
+.btn-outline-dark { border-radius: 0 10px 10px 0; }
+.placeholder-card { padding: 2rem 1.6rem; text-align: center; }
+.placeholder-icon { font-size: 3.4rem; color: var(--accent); line-height: 1; text-shadow: 0 0 0 var(--navy); }
+.placeholder-card h2 { font-family: var(--serif); font-size: 1.5rem; margin: .8rem 0 1rem; }
+.placeholder-card ol { text-align: left; color: var(--muted); padding-left: 1.2rem; margin-bottom: 1rem; }
+.placeholder-card li { margin-bottom: .35rem; }
+.placeholder-note { color: var(--muted); font-size: .85rem; background: var(--bg); border-radius: 10px; padding: .7rem .9rem; margin: 0; text-align: left; }
+.result-card { --band: var(--mild); --band-2: var(--mild-2); }
+.result-cool { --band: var(--cool); --band-2: var(--cool-2); }
+.result-mild { --band: var(--mild); --band-2: var(--mild-2); }
+.result-warm { --band: var(--warm); --band-2: var(--warm-2); }
+.result-hot  { --band: var(--hot);  --band-2: var(--hot-2); }
+.result-top { background: linear-gradient(135deg, var(--band), var(--band-2)); color: #fff; padding: 1.5rem 1.4rem; display: flex; align-items: center; gap: 1.1rem; }
+.result-icon { font-size: 3.4rem; line-height: 1; background: rgba(255, 255, 255, .18); border-radius: 18px; width: 5.2rem; height: 5.2rem; display: flex; align-items: center; justify-content: center; flex: none; }
+.result-label { font-size: .85rem; opacity: .92; font-weight: 600; }
+.result-value { font-family: var(--serif); font-size: 3.6rem; font-weight: 700; line-height: 1.05; }
+.result-value span { font-size: 1.5rem; margin-left: .15rem; opacity: .9; }
+.band-badge { display: inline-block; background: rgba(255, 255, 255, .22); border-radius: 999px; padding: .15rem .7rem; font-size: .8rem; font-weight: 600; }
+.result-card .card-body { padding: 1.3rem 1.4rem 1.4rem; }
+.range-list { margin: 0 0 1rem; }
+.range-list > div { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; padding: .55rem 0; border-bottom: 1px solid var(--line); }
+.range-list dt { font-weight: 600; font-size: .9rem; color: var(--muted); }
+.range-list dt i { color: var(--band); margin-right: .3rem; }
+.range-list dd { margin: 0; font-weight: 700; }
+.observed { background: #eef6ff; border: 1px solid #cfe3fb; color: #1c4e80; border-radius: 10px; padding: .6rem .8rem; font-size: .88rem; margin-bottom: 1rem; }
+.chart-title { font-size: .8rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin: .4rem 0 .2rem; }
+.chart-wrap { overflow-x: auto; margin-top: .3rem; }
+.input-chart { width: 100%; height: auto; display: block; }
+.input-chart .grid { stroke: var(--line); stroke-width: 1; }
+.input-chart .cat.small { font-size: 10.5px; }
+.input-chart .axis { fill: var(--muted); font-size: 12px; }
+.input-chart .trail { fill: none; stroke: #b7bbd0; stroke-width: 2.5; }
+.input-chart .link { stroke: var(--band); stroke-width: 2.5; stroke-dasharray: 6 5; }
+.input-chart .dot { fill: var(--navy); }
+.input-chart .dot.forecast { fill: var(--band); stroke: #fff; stroke-width: 3; }
+.input-chart .val { fill: var(--ink); font-size: 12.5px; font-weight: 600; }
+.input-chart .val.forecast { fill: var(--band); font-size: 17px; font-weight: 700; }
+.input-chart .cat { fill: var(--muted); font-size: 12px; }
+.input-chart .cat.strong { fill: var(--ink); font-weight: 700; }
+.input-chart .whisker { stroke: var(--band); stroke-width: 3; stroke-linecap: round; }
+.result-meta { display: flex; flex-wrap: wrap; gap: .5rem 1rem; align-items: center; font-size: .82rem; color: var(--muted); margin-top: .6rem; }
+.cache-badge { background: #fff7d6; color: #7a5b00; border-radius: 999px; padding: .1rem .6rem; font-weight: 600; }
+.site-footer { color: var(--muted); font-size: .8rem; text-align: center; padding: 0 0 2rem; }
+@media (max-width: 575.98px) {
+  .hero { padding: 2rem 0 4.4rem; }
+  .form-card .card-body, .result-card .card-body { padding: 1rem; }
+  .result-top { padding: 1.1rem 1rem; gap: .8rem; }
+  .result-icon { width: 4rem; height: 4rem; font-size: 2.5rem; border-radius: 14px; }
+  .result-value { font-size: 2.9rem; }
+}
+</style>
+{% endblock %}
 {% block content %}
 <header class="hero">
   <div class="container">
@@ -49,96 +142,152 @@
               </select>
               <button type="button" id="load-sample" class="btn btn-outline-dark">Load</button>
             </div>
-            <div id="sample-status" class="form-text" aria-live="polite">The form is pre-filled with the latest readings in the dataset.</div>
+            <div id="sample-status" class="form-text mt-1 text-muted">The form is pre-filled with the latest readings in the dataset.</div>
           </div>
 
           <fieldset class="section">
             <legend><span class="step">1</span> When</legend>
-            <div class="row g-3"><div class="col-md-6">{% include "forecast/_field.html" with field=form.forecast_date %}</div></div>
+            <div class="row">
+              <div class="col-sm-6">
+                {% include "forecast/_field.html" with field=form.forecast_date %}
+              </div>
+            </div>
           </fieldset>
 
           <fieldset class="section">
             <legend><span class="step">2</span> Recent readings</legend>
             <div class="row g-3">
-              <div class="col-sm-6 col-md-4">{% include "forecast/_field.html" with field=form.temp_2d_ago suffix="°C" %}</div>
-              <div class="col-sm-6 col-md-4">{% include "forecast/_field.html" with field=form.temp_24d_ago suffix="°C" %}</div>
-              <div class="col-sm-12 col-md-4">{% include "forecast/_field.html" with field=form.temp_1y_ago suffix="°C" %}</div>
+              <div class="col-sm-4">{% include "forecast/_field.html" with field=form.temp_2d_ago unit="°C" %}</div>
+              <div class="col-sm-4">{% include "forecast/_field.html" with field=form.temp_24d_ago unit="°C" %}</div>
+              <div class="col-sm-4">{% include "forecast/_field.html" with field=form.temp_1y_ago unit="°C" %}</div>
             </div>
           </fieldset>
 
           <fieldset class="section">
             <legend><span class="step">3</span> Recent averages</legend>
             <div class="row g-3">
-              <div class="col-sm-6 col-md-4">{% include "forecast/_field.html" with field=form.avg_8d suffix="°C" %}</div>
-              <div class="col-sm-6 col-md-4">{% include "forecast/_field.html" with field=form.avg_30d suffix="°C" %}</div>
-              <div class="col-sm-12 col-md-4">{% include "forecast/_field.html" with field=form.avg_62d suffix="°C" %}</div>
+              <div class="col-sm-4">{% include "forecast/_field.html" with field=form.avg_8d unit="°C" %}</div>
+              <div class="col-sm-4">{% include "forecast/_field.html" with field=form.avg_30d unit="°C" %}</div>
+              <div class="col-sm-4">{% include "forecast/_field.html" with field=form.avg_62d unit="°C" %}</div>
             </div>
           </fieldset>
 
           <fieldset class="section">
             <legend><span class="step">4</span> Model</legend>
-            <div class="row g-3"><div class="col-md-8">{% include "forecast/_field.html" with field=form.model %}</div></div>
+            <div class="row">
+              <div class="col-sm-8">
+                {% include "forecast/_field.html" with field=form.model %}
+              </div>
+            </div>
           </fieldset>
 
-          <button type="submit" class="btn btn-forecast w-100" id="submit-btn">
-            <span class="spinner-border spinner-border-sm d-none" aria-hidden="true"></span>
-            <span class="label"><i class="bi bi-graph-up-arrow"></i> Forecast temperature</span>
-          </button>
+          <div class="d-grid mt-4">
+            <button type="submit" id="submit-btn" class="btn btn-forecast">
+              <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+              <i class="bi bi-magic"></i><span class="label">Forecast temperature</span>
+            </button>
+          </div>
+
         </div>
       </form>
     </div>
 
-    <!-- ===================== result ===================== -->
+    <!-- ===================== result / placeholder ===================== -->
     <div class="col-lg-5 {% if forecast %}order-1 order-lg-2{% endif %}">
       {% if forecast %}
-      <section class="card result-card result-{{ band.key }}" id="result" aria-live="polite">
+      <section id="result" class="card result-card result-{{ forecast.band }}">
         <div class="result-top">
-          <div class="result-icon"><i class="bi {{ band.icon }}"></i></div>
+          <div class="result-icon"><i class="bi {{ forecast.band_icon }}"></i></div>
           <div>
-            <div class="result-label">Forecast for {{ forecast_date|date:"l, j F Y" }}</div>
-            <div class="result-value">{{ forecast.value|floatformat:1 }}<span>°C</span></div>
-            <span class="band-badge">{{ band.label }} · {{ band.hint }}</span>
+            <div class="result-label">Predicted for {{ forecast.forecast_date|date:"D, j M Y" }}</div>
+            <div class="result-value">{{ forecast.predicted_temperature_c }}<span>°C</span></div>
+            <span class="band-badge">{{ forecast.band_label }}</span>
           </div>
         </div>
         <div class="card-body">
           <dl class="range-list">
-            <div><dt><i class="bi bi-arrows-expand-vertical"></i> Likely range (80%)</dt><dd>{{ forecast.low80|floatformat:1 }} – {{ forecast.high80|floatformat:1 }} °C</dd></div>
-            <div><dt><i class="bi bi-arrows-expand"></i> Wide range (95%)</dt><dd>{{ forecast.low95|floatformat:1 }} – {{ forecast.high95|floatformat:1 }} °C</dd></div>
+            <div><dt><i class="bi bi-shield-check"></i> 80% range</dt><dd>{{ forecast.interval_80.0 }} to {{ forecast.interval_80.1 }} °C</dd></div>
+            <div><dt><i class="bi bi-shield"></i> 95% range</dt><dd>{{ forecast.interval_95.0 }} to {{ forecast.interval_95.1 }} °C</dd></div>
           </dl>
-          {% if observed is not None %}
-          <div class="observed"><i class="bi bi-clipboard-check"></i>
-            Recorded in the dataset for this date: <strong>{{ observed|floatformat:1 }} °C</strong>
-            (forecast difference {{ observed_error|floatformat:"1" }} °C)
+
+          {% if forecast.observed is not None %}
+          <div class="observed">
+            <i class="bi bi-info-circle-fill"></i> Recorded temperature on this date: <strong>{{ forecast.observed }} °C</strong>
+            (error: <strong>{{ forecast.error|floatformat:2 }} °C</strong>).
           </div>
           {% endif %}
-          <h2 class="chart-title">Your inputs and the forecast</h2>
+
+          <div class="chart-title">Inputs vs forecast</div>
           <div class="chart-wrap">{{ chart_svg|safe }}</div>
+
           <div class="result-meta">
-            <span><i class="bi bi-cpu"></i> {{ forecast.model_label }} · typical error ±{{ forecast.cv_mae|floatformat:2 }} °C</span>
-            {% if forecast.cached %}<span class="cache-badge"><i class="bi bi-lightning-charge-fill"></i> served from cache</span>{% endif %}
+            <span><i class="bi bi-cpu"></i> {{ forecast.model_label }}</span>
+            {% if forecast.cached %}<span class="cache-badge"><i class="bi bi-lightning-fill"></i> cached</span>{% endif %}
           </div>
         </div>
       </section>
       {% else %}
-      <section class="card placeholder-card" id="result">
-        <div class="placeholder-icon"><i class="bi bi-cloud-sun"></i></div>
-        <h2>Your forecast will appear here</h2>
+      <div id="result" class="card placeholder-card">
+        <div class="placeholder-icon"><i class="bi bi-sun-fill"></i></div>
+        <h2>How to forecast</h2>
         <ol>
-          <li>Pick the date you want a forecast for.</li>
-          <li>Type recent temperatures, or load real data with one click.</li>
-          <li>Press <strong>Forecast temperature</strong>.</li>
+          <li>Pick a <strong>forecast date</strong>.</li>
+          <li>Enter recent readings or use <em>Try it with real data</em>.</li>
+          <li>Choose a model and press <strong>Forecast</strong>.</li>
         </ol>
-        <p class="placeholder-note">The model predicts the next 2-day reading from recent history and the time of year, so it only needs temperatures, not humidity or pressure.</p>
-      </section>
+        <p class="placeholder-note">
+          <i class="bi bi-lightbulb-fill text-warning"></i>
+          Predictions come from a model trained on daily temperature readings sampled every 2 days (NASA POWER, Cairo, 2021–2026).
+        </p>
+      </div>
       {% endif %}
     </div>
+
   </div>
 </main>
 
 <footer class="site-footer">
-  <div class="container">
-    Data: NASA POWER daily series for Cairo (2021 – 2026), sampled every 2 days.
-    Ranges come from out-of-sample errors during time-series cross-validation and are approximate.
-  </div>
+  Cairo Temperature Forecast · Django + scikit-learn · 2-day time series
 </footer>
+<script>
+// Inline JS enhancements
+(function () {
+  const form = document.getElementById("forecast-form");
+  if (!form) return;
+  const select = document.getElementById("sample-select");
+  const loadBtn = document.getElementById("load-sample");
+  const status = document.getElementById("sample-status");
+  const fields = ["forecast_date", "temp_2d_ago", "temp_24d_ago", "temp_1y_ago", "avg_8d", "avg_30d", "avg_62d"];
+
+  async function loadSample() {
+    if (!status) return;
+    status.textContent = "Loading…";
+    try {
+      const response = await fetch(form.dataset.sampleUrl + "?date=" + encodeURIComponent(select.value));
+      const data = await response.json();
+      if (!response.ok || !data.ok) throw new Error((data.errors && data.errors.date && data.errors.date[0]) || "No data for this date.");
+      fields.forEach(function (name) {
+        const input = document.getElementById("id_" + name);
+        if (input) { input.value = name === "forecast_date" ? data.forecast_date : data[name]; input.classList.remove("is-invalid"); }
+      });
+      status.textContent = data.observed === null
+        ? "Loaded the latest real readings. Press “Forecast temperature”."
+        : "Loaded real readings. Observed value on that date: " + data.observed.toFixed(1) + " °C.";
+    } catch (error) {
+      status.textContent = error.message;
+    }
+  }
+  if (loadBtn) loadBtn.addEventListener("click", loadSample);
+
+  form.addEventListener("submit", function () {
+    const button = document.getElementById("submit-btn");
+    if (!button) return;
+    button.disabled = true;
+    const spinner = button.querySelector(".spinner-border");
+    if (spinner) spinner.classList.remove("d-none");
+    const label = button.querySelector(".label");
+    if (label) label.textContent = " Forecasting…";
+  });
+})();
+</script>
 {% endblock %}
