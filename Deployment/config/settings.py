@@ -26,10 +26,12 @@ ALLOWED_HOSTS = env_list("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1,[::1],test
 CSRF_TRUSTED_ORIGINS = env_list("DJANGO_CSRF_TRUSTED_ORIGINS")
 
 # Hosting platforms announce their public hostname through env variables.
-for _host in (os.environ.get("RENDER_EXTERNAL_HOSTNAME"), os.environ.get("RAILWAY_PUBLIC_DOMAIN")):
+for _host in (os.environ.get("RENDER_EXTERNAL_HOSTNAME"), os.environ.get("RAILWAY_PUBLIC_DOMAIN"), os.environ.get("VERCEL_URL")):
     if _host:
         ALLOWED_HOSTS.append(_host)
         CSRF_TRUSTED_ORIGINS.append(f"https://{_host}")
+
+ALLOWED_HOSTS.append(".vercel.app")
 
 # Only switch these on behind HTTPS (Render / Railway); they would break plain-http local runs.
 if env_bool("DJANGO_SECURE_COOKIES", False):
